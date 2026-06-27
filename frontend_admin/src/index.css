@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    @apply bg-admin-bg text-admin-text font-body antialiased;
+    scrollbar-width: thin;
+    scrollbar-color: #2e2e2e #0f0f0f;
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-admin-bg; }
+  ::-webkit-scrollbar-thumb { @apply bg-admin-border rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-admin-muted; }
+
+  h1, h2, h3, h4 { @apply font-heading; }
+}
+
+@layer components {
+  .admin-card {
+    @apply bg-admin-card border border-admin-border rounded-2xl;
+  }
+
+  .admin-input {
+    @apply w-full bg-admin-surface border border-admin-border text-admin-text font-body text-sm 
+           rounded-xl px-4 py-2.5 placeholder-admin-muted 
+           focus:outline-none focus:border-brand-500 transition-colors;
+  }
+
+  .admin-btn-primary {
+    @apply bg-brand-800 hover:bg-brand-900 text-white font-body font-semibold text-sm 
+           px-5 py-2.5 rounded-xl transition-all cursor-pointer 
+           flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .admin-btn-secondary {
+    @apply bg-admin-surface hover:bg-admin-hover border border-admin-border text-admin-text 
+           font-body font-medium text-sm px-5 py-2.5 rounded-xl transition-all cursor-pointer 
+           flex items-center gap-2;
+  }
+
+  .admin-btn-danger {
+    @apply bg-red-900/40 hover:bg-red-900/60 border border-red-800/50 text-red-400 
+           font-body font-medium text-sm px-4 py-2 rounded-xl transition-all cursor-pointer 
+           flex items-center gap-2;
+  }
+
+  .admin-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-body font-semibold uppercase tracking-wide;
+  }
+
+  .stat-card {
+    @apply admin-card p-6 flex flex-col gap-3 hover:border-brand-500/30 transition-all duration-300;
+  }
+
+  .table-row {
+    @apply border-b border-admin-border hover:bg-admin-hover/50 transition-colors;
+  }
+}

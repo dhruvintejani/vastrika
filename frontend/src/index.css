@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-bg: #F8F5F0;
+    --color-cream: #EFE7DC;
+    --color-beige: #E8DCCB;
+    --color-rose: #C58C85;
+    --color-maroon: #7A4E48;
+    --color-text: #1F1F1F;
+    --color-gold: #C9A86A;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #F8F5F0;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #C9A86A;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #7A4E48;
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .font-body {
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-33.33%); }
+  }
+
+  .animate-marquee {
+    animation: marquee 25s linear infinite;
+  }
+  .text-gold {
+    color: #C9A86A;
+  }
+  .text-maroon {
+    color: #7A4E48;
+  }
+  .text-rose {
+    color: #C58C85;
+  }
+  .bg-brand {
+    background-color: #F8F5F0;
+  }
+  .bg-cream {
+    background-color: #EFE7DC;
+  }
+  .bg-beige {
+    background-color: #E8DCCB;
+  }
+  .border-gold {
+    border-color: #C9A86A;
+  }
+
+  .swiper-pagination-bullet {
+    background: #C9A86A !important;
+    opacity: 0.4;
+  }
+
+  .swiper-pagination-bullet-active {
+    opacity: 1 !important;
+    background: #7A4E48 !important;
+  }
+
+  .swiper-button-prev,
+  .swiper-button-next {
+    color: #7A4E48 !important;
+  }
+}

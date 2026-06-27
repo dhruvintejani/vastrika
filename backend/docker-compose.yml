@@ -1,0 +1,156 @@
+# version: "3.9"
+
+# services:
+#   # ── PostgreSQL Database ─────────────────────────────────────────────────────
+#   db:
+#     image: postgres:16-alpine
+#     container_name: vastrika_db
+#     restart: unless-stopped
+#     environment:
+#       POSTGRES_DB: ${DB_NAME:-vastrika_db}
+#       POSTGRES_USER: ${DB_USER:-vastrika_user}
+#       POSTGRES_PASSWORD: ${DB_PASSWORD:-vastrika_pass}
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-vastrika_user} -d ${DB_NAME:-vastrika_db}"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 10
+#     networks:
+#       - vastrika_net
+
+#   # ── FastAPI Application ─────────────────────────────────────────────────────
+#   api:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#       target: runtime
+#     container_name: vastrika_api
+#     restart: unless-stopped
+#     depends_on:
+#       db:
+#         condition: service_healthy
+#     env_file:
+#       - .env
+#     environment:
+#       DB_HOST: db
+#       DB_PORT: 5432
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       - .:/app
+#     command: >
+#       sh -c "
+#         echo 'Running Alembic migrations...' &&
+#         alembic upgrade head &&
+#         echo 'Starting server...' &&
+#         uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+#       "
+#     networks:
+#       - vastrika_net
+
+#   # ── pgAdmin (DB GUI for development) ───────────────────────────────────────
+#   pgadmin:
+#     image: dpage/pgadmin4:latest
+#     container_name: vastrika_pgadmin
+#     restart: unless-stopped
+#     environment:
+#       PGADMIN_DEFAULT_EMAIL: admin@vastrika.in
+#       PGADMIN_DEFAULT_PASSWORD: admin123
+#     ports:
+#       - "5050:80"
+#     depends_on:
+#       - db
+#     networks:
+#       - vastrika_net
+#     profiles:
+#       - dev  # Only starts with: docker compose --profile dev up
+
+# volumes:
+#   postgres_data:
+
+# networks:
+#   vastrika_net:
+#     driver: bridge
+
+
+version: "3.9"
+
+services:
+  # ── PostgreSQL Database ─────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: vastrika_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-vastrika_db}
+      POSTGRES_USER: ${DB_USER:-vastrika_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-vastrika_pass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-vastrika_user} -d ${DB_NAME:-vastrika_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - vastrika_net
+
+  # ── FastAPI Application ─────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: vastrika_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: >
+      sh -c "
+        echo 'Running Alembic migrations...' &&
+        alembic upgrade head &&
+        echo 'Starting server...' &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+    networks:
+      - vastrika_net
+
+  # ── pgAdmin (DB GUI for development) ───────────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: vastrika_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@vastrika.in
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - vastrika_net
+    profiles:
+      - dev  # Only starts with: docker compose --profile dev up
+
+volumes:
+  postgres_data:
+
+networks:
+  vastrika_net:
+    driver: bridge

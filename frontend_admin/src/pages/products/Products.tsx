@@ -1,0 +1,682 @@
+// // src/pages/products/Products.tsx
+// import { useEffect, useState, useCallback } from 'react';
+// import { motion } from 'framer-motion';
+// import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiPackage, FiUpload, FiX } from 'react-icons/fi';
+// import toast from 'react-hot-toast';
+// import { adminApi } from '../../api/client';
+// import { Product, Category } from '../../types';
+// import {
+//   PageLoader, Modal, ConfirmDialog, Pagination, EmptyState,
+//   Badge, Input, Textarea, Select, Toggle, Spinner,
+// } from '../../components/ui';
+// import { toastStyle } from '../../store/authstore';
+
+// export default function Products() {
+//   const [products, setProducts] = useState<Product[]>([]);
+//   const [categories, setCategories] = useState<Category[]>([]);
+//   const [total, setTotal] = useState(0);
+//   const [page, setPage] = useState(1);
+//   const [search, setSearch] = useState('');
+//   const [loading, setLoading] = useState(true);
+//   const [formOpen, setFormOpen] = useState(false);
+//   const [editProduct, setEditProduct] = useState<Product | null>(null);
+//   const [deleteId, setDeleteId] = useState<number | null>(null);
+//   const [deleting, setDeleting] = useState(false);
+//   const [saving, setSaving] = useState(false);
+
+//   // Form state
+//   const [form, setForm] = useState({
+//     title: '', description: '', category_id: '', price: '',
+//     old_price: '', badge: '', is_new: false, is_featured: false, is_active: true,
+//   });
+//   const [variantRows, setVariantRows] = useState([{ size: 'Free Size', color: '', stock: '10', additional_price: '0' }]);
+//   const [imageFiles, setImageFiles] = useState<File[]>([]);
+
+//   const PAGE_SIZE = 12;
+
+//   const load = useCallback(async () => {
+//     setLoading(true);
+//     const res = await adminApi.getProducts({ page, page_size: PAGE_SIZE, search: search || undefined });
+//     setProducts(res.data.data || []);
+//     setTotal(res.data.total || 0);
+//     setLoading(false);
+//   }, [page, search]);
+
+//   useEffect(() => { load(); }, [load]);
+
+//   useEffect(() => {
+//     adminApi.getCategories().then((r) => setCategories(r.data.data || []));
+//   }, []);
+
+//   const openCreate = () => {
+//     setEditProduct(null);
+//     setForm({ title: '', description: '', category_id: categories[0]?.id?.toString() || '', price: '', old_price: '', badge: '', is_new: false, is_featured: false, is_active: true });
+//     setVariantRows([{ size: 'Free Size', color: '', stock: '10', additional_price: '0' }]);
+//     setImageFiles([]);
+//     setFormOpen(true);
+//   };
+
+//   const openEdit = (p: Product) => {
+//     setEditProduct(p);
+//     setForm({
+//       title: p.title, description: p.description || '', category_id: p.category.id.toString(),
+//       price: p.price.toString(), old_price: p.old_price.toString(), badge: p.badge || '',
+//       is_new: p.is_new, is_featured: p.is_featured, is_active: true,
+//     });
+//     setVariantRows(p.variants.map((v) => ({
+//       size: v.size, color: v.color, stock: v.stock.toString(), additional_price: v.additional_price.toString(),
+//     })));
+//     setImageFiles([]);
+//     setFormOpen(true);
+//   };
+
+//   const handleSave = async () => {
+//     if (!form.title || !form.price || !form.old_price) {
+//       toast.error('Fill in required fields', { style: toastStyle }); return;
+//     }
+//     setSaving(true);
+//     try {
+//       const payload = {
+//         ...form,
+//         category_id: parseInt(form.category_id),
+//         price: parseFloat(form.price),
+//         old_price: parseFloat(form.old_price),
+//         variants: variantRows.map((r) => ({
+//           size: r.size, color: r.color, stock: parseInt(r.stock), additional_price: parseFloat(r.additional_price),
+//         })),
+//       };
+
+//       let productId: number;
+//       if (editProduct) {
+//         const res = await adminApi.updateProduct(editProduct.id, payload);
+//         productId = res.data.data.id;
+//         toast.success('Product updated', { style: toastStyle });
+//       } else {
+//         const res = await adminApi.createProduct(payload);
+//         productId = res.data.data.id;
+//         toast.success('Product created', { style: toastStyle });
+//       }
+
+//       // Upload new images
+//       for (let i = 0; i < imageFiles.length; i++) {
+//         await adminApi.uploadProductImage(productId, imageFiles[i], i);
+//       }
+
+//       setFormOpen(false);
+//       load();
+//     } catch (err: any) {
+//       toast.error(err.response?.data?.error || 'Failed to save', { style: toastStyle });
+//     } finally {
+//       setSaving(false);
+//     }
+//   };
+
+//   const handleDelete = async () => {
+//     if (!deleteId) return;
+//     setDeleting(true);
+//     try {
+//       await adminApi.deleteProduct(deleteId);
+//       toast.success('Product deleted', { style: toastStyle });
+//       setDeleteId(null);
+//       load();
+//     } finally {
+//       setDeleting(false);
+//     }
+//   };
+
+//   return (
+//     <div className="space-y-6 animate-fade-in">
+//       <div className="flex items-center justify-between">
+//         <div>
+//           <h1 className="font-heading text-3xl text-admin-text">Products</h1>
+//           <p className="font-body text-sm text-admin-muted mt-1">{total} total products</p>
+//         </div>
+//         <button onClick={openCreate} className="admin-btn-primary">
+//           <FiPlus className="w-4 h-4" /> Add Product
+//         </button>
+//       </div>
+
+//       {/* Search */}
+//       <div className="relative max-w-sm">
+//         <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-admin-muted" />
+//         <input
+//           value={search}
+//           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+//           placeholder="Search products..."
+//           className="admin-input pl-10"
+//         />
+//       </div>
+
+//       {loading ? <PageLoader /> : products.length === 0 ? (
+//         <EmptyState icon={<FiPackage className="w-16 h-16" />} title="No products found" description="Create your first product to get started" />
+//       ) : (
+//         <>
+//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+//             {products.map((product, i) => (
+//               <motion.div
+//                 key={product.id}
+//                 initial={{ opacity: 0, y: 16 }}
+//                 animate={{ opacity: 1, y: 0 }}
+//                 transition={{ delay: i * 0.04 }}
+//                 className="admin-card overflow-hidden group hover:border-brand-500/30 transition-all"
+//               >
+//                 {/* Image */}
+//                 <div className="aspect-[4/3] bg-admin-bg overflow-hidden relative">
+//                   {product.images[0] ? (
+//                     <img src={product.images[0].url} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+//                   ) : (
+//                     <div className="w-full h-full flex items-center justify-center">
+//                       <FiPackage className="w-10 h-10 text-admin-border" />
+//                     </div>
+//                   )}
+//                   <div className="absolute top-2 left-2 flex gap-1 flex-wrap">
+//                     {product.is_new && <Badge status="active" label="New" />}
+//                     {product.is_featured && <Badge status="approved" label="Featured" />}
+//                   </div>
+//                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+//                     <button onClick={() => openEdit(product)} className="w-7 h-7 rounded-lg bg-admin-card/90 flex items-center justify-center hover:bg-brand-800 text-admin-text transition-colors cursor-pointer">
+//                       <FiEdit2 className="w-3.5 h-3.5" />
+//                     </button>
+//                     <button onClick={() => setDeleteId(product.id)} className="w-7 h-7 rounded-lg bg-admin-card/90 flex items-center justify-center hover:bg-red-800 text-admin-text transition-colors cursor-pointer">
+//                       <FiTrash2 className="w-3.5 h-3.5" />
+//                     </button>
+//                   </div>
+//                 </div>
+
+//                 <div className="p-4">
+//                   <p className="font-body text-[10px] text-brand-400 uppercase tracking-wider mb-1">{product.category.name}</p>
+//                   <h3 className="font-body text-sm font-semibold text-admin-text line-clamp-1 mb-2">{product.title}</h3>
+//                   <div className="flex items-center justify-between">
+//                     <div>
+//                       <span className="font-body text-sm font-bold text-admin-text">₹{Number(product.price).toLocaleString('en-IN')}</span>
+//                       <span className="font-body text-xs text-admin-muted line-through ml-2">₹{Number(product.old_price).toLocaleString('en-IN')}</span>
+//                     </div>
+//                     <span className="font-body text-xs text-admin-muted">
+//                       {product.variants.reduce((s, v) => s + v.stock, 0)} in stock
+//                     </span>
+//                   </div>
+//                 </div>
+//               </motion.div>
+//             ))}
+//           </div>
+//           <Pagination page={page} totalPages={Math.ceil(total / PAGE_SIZE)} onChange={setPage} />
+//         </>
+//       )}
+
+//       {/* Create/Edit Modal */}
+//       <Modal open={formOpen} onClose={() => setFormOpen(false)} title={editProduct ? 'Edit Product' : 'Add Product'} size="xl">
+//         <div className="grid grid-cols-2 gap-5 max-h-[70vh] overflow-y-auto pr-1">
+//           <div className="col-span-2">
+//             <Input label="Title *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Kanjivaram Silk Saree" />
+//           </div>
+//           <div className="col-span-2">
+//             <Textarea label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Product description..." />
+//           </div>
+//           <Select label="Category *" value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
+//             {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+//           </Select>
+//           <Input label="Badge" value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} placeholder="e.g. Bestseller" />
+//           <Input label="Price (₹) *" type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+//           <Input label="Old Price (₹) *" type="number" value={form.old_price} onChange={(e) => setForm({ ...form, old_price: e.target.value })} />
+
+//           <div className="col-span-2 flex gap-6">
+//             <Toggle checked={form.is_new} onChange={(v) => setForm({ ...form, is_new: v })} label="Mark as New Arrival" />
+//             <Toggle checked={form.is_featured} onChange={(v) => setForm({ ...form, is_featured: v })} label="Featured Product" />
+//             <Toggle checked={form.is_active} onChange={(v) => setForm({ ...form, is_active: v })} label="Active" />
+//           </div>
+
+//           {/* Variants */}
+//           <div className="col-span-2">
+//             <div className="flex items-center justify-between mb-2">
+//               <label className="font-body text-xs font-semibold text-admin-muted uppercase tracking-wider">Variants (Size / Color / Stock)</label>
+//               <button type="button" onClick={() => setVariantRows([...variantRows, { size: '', color: '', stock: '0', additional_price: '0' }])} className="font-body text-xs text-brand-400 hover:text-brand-300 cursor-pointer flex items-center gap-1">
+//                 <FiPlus className="w-3.5 h-3.5" /> Add Variant
+//               </button>
+//             </div>
+//             <div className="space-y-2">
+//               {variantRows.map((row, i) => (
+//                 <div key={i} className="grid grid-cols-5 gap-2 items-center">
+//                   <input value={row.size} onChange={(e) => { const r = [...variantRows]; r[i].size = e.target.value; setVariantRows(r); }} placeholder="Size" className="admin-input text-xs" />
+//                   <input value={row.color} onChange={(e) => { const r = [...variantRows]; r[i].color = e.target.value; setVariantRows(r); }} placeholder="Color" className="admin-input text-xs" />
+//                   <input value={row.stock} onChange={(e) => { const r = [...variantRows]; r[i].stock = e.target.value; setVariantRows(r); }} type="number" placeholder="Stock" className="admin-input text-xs" />
+//                   <input value={row.additional_price} onChange={(e) => { const r = [...variantRows]; r[i].additional_price = e.target.value; setVariantRows(r); }} type="number" placeholder="+Price" className="admin-input text-xs" />
+//                   <button type="button" onClick={() => setVariantRows(variantRows.filter((_, j) => j !== i))} className="w-8 h-8 flex items-center justify-center text-admin-muted hover:text-red-400 cursor-pointer">
+//                     <FiX className="w-4 h-4" />
+//                   </button>
+//                 </div>
+//               ))}
+//             </div>
+//           </div>
+
+//           {/* Image Upload */}
+//           <div className="col-span-2">
+//             <label className="font-body text-xs font-semibold text-admin-muted uppercase tracking-wider mb-2 block">Images</label>
+//             <label className="flex items-center justify-center gap-2 border-2 border-dashed border-admin-border rounded-xl p-6 cursor-pointer hover:border-brand-500/50 transition-colors">
+//               <FiUpload className="w-5 h-5 text-admin-muted" />
+//               <span className="font-body text-sm text-admin-muted">Click to upload images (JPEG, PNG, WebP · max 5MB each)</span>
+//               <input type="file" multiple accept="image/*" className="hidden" onChange={(e) => e.target.files && setImageFiles(Array.from(e.target.files))} />
+//             </label>
+//             {imageFiles.length > 0 && (
+//               <p className="font-body text-xs text-brand-400 mt-2">{imageFiles.length} file(s) selected</p>
+//             )}
+//             {editProduct && editProduct.images.length > 0 && (
+//               <div className="flex gap-2 mt-3 flex-wrap">
+//                 {editProduct.images.map((img) => (
+//                   <img key={img.id} src={img.url} alt="" className="w-16 h-16 rounded-lg object-cover border border-admin-border" />
+//                 ))}
+//               </div>
+//             )}
+//           </div>
+//         </div>
+
+//         <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-admin-border">
+//           <button onClick={() => setFormOpen(false)} className="admin-btn-secondary">Cancel</button>
+//           <button onClick={handleSave} disabled={saving} className="admin-btn-primary">
+//             {saving ? <Spinner size="sm" /> : null}
+//             {saving ? 'Saving...' : editProduct ? 'Update Product' : 'Create Product'}
+//           </button>
+//         </div>
+//       </Modal>
+
+//       <ConfirmDialog
+//         open={deleteId !== null}
+//         onClose={() => setDeleteId(null)}
+//         onConfirm={handleDelete}
+//         loading={deleting}
+//         title="Delete Product"
+//         message="This will soft-delete the product. It won't appear in the store but order history is preserved."
+//       />
+//     </div>
+//   );
+// }
+
+
+// src/pages/products/Products.tsx
+import { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiPackage, FiUpload, FiX } from 'react-icons/fi';
+import toast from 'react-hot-toast';
+import { adminApi } from '../../api/client';
+import { Product, Category } from '../../types';
+import {
+  PageLoader, Modal, ConfirmDialog, Pagination, EmptyState,
+  Badge, Input, Textarea, Select, Toggle, Spinner,
+} from '../../components/ui';
+import { toastStyle } from '../../store/authstore';
+
+export default function Products() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [form, setForm] = useState({
+    title: '', description: '', category_id: '', price: '',
+    old_price: '', badge: '', is_new: false, is_featured: false, is_active: true,
+  });
+
+  // Variants: removed additional_price — only size, color, stock
+  const [variantRows, setVariantRows] = useState([
+    { size: 'Free Size', color: '', stock: '10' },
+  ]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+
+  const PAGE_SIZE = 12;
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const res = await adminApi.getProducts({ page, page_size: PAGE_SIZE, search: search || undefined });
+    setProducts(res.data.data || []);
+    setTotal(res.data.total || 0);
+    setLoading(false);
+  }, [page, search]);
+
+  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    adminApi.getCategories().then((r) => setCategories(r.data.data || []));
+  }, []);
+
+  const openCreate = () => {
+    setEditProduct(null);
+    setForm({
+      title: '', description: '',
+      category_id: categories[0]?.id?.toString() || '',
+      price: '', old_price: '', badge: '',
+      is_new: false, is_featured: false, is_active: true,
+    });
+    setVariantRows([{ size: 'Free Size', color: '', stock: '10' }]);
+    setImageFiles([]);
+    setFormOpen(true);
+  };
+
+  const openEdit = (p: Product) => {
+    setEditProduct(p);
+    setForm({
+      title: p.title,
+      description: p.description || '',
+      category_id: p.category.id.toString(),
+      price: p.price.toString(),
+      old_price: p.old_price.toString(),
+      badge: p.badge || '',
+      // FIX: read actual values from product, not hardcoded defaults
+      is_new: p.is_new,
+      is_featured: p.is_featured,
+      is_active: (p as any).is_active ?? true,
+    });
+    setVariantRows(
+      p.variants.map((v) => ({
+        size: v.size,
+        color: v.color,
+        // Keep additional_price on variant for backend but don't show in UI
+        stock: v.stock.toString(),
+      }))
+    );
+    setImageFiles([]);
+    setFormOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!form.title || !form.price || !form.old_price) {
+      toast.error('Fill in required fields', { style: toastStyle }); return;
+    }
+    setSaving(true);
+    try {
+      const payload = {
+        title: form.title,
+        description: form.description,
+        category_id: parseInt(form.category_id),
+        price: parseFloat(form.price),
+        old_price: parseFloat(form.old_price),
+        badge: form.badge || null,
+        is_new: form.is_new,
+        is_featured: form.is_featured,
+        is_active: form.is_active,
+        variants: variantRows.map((r) => ({
+          size: r.size,
+          color: r.color || 'Default',
+          stock: parseInt(r.stock) || 0,
+          // additional_price defaults to 0 since we removed it from UI
+          additional_price: 0,
+        })),
+      };
+
+      let productId: number;
+      if (editProduct) {
+        const res = await adminApi.updateProduct(editProduct.id, payload);
+        productId = res.data.data.id;
+        toast.success('Product updated', { style: toastStyle });
+      } else {
+        const res = await adminApi.createProduct(payload);
+        productId = res.data.data.id;
+        toast.success('Product created', { style: toastStyle });
+      }
+
+      for (let i = 0; i < imageFiles.length; i++) {
+        await adminApi.uploadProductImage(productId, imageFiles[i], i);
+      }
+
+      setFormOpen(false);
+      load();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to save', { style: toastStyle });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setDeleting(true);
+    try {
+      await adminApi.deleteProduct(deleteId);
+      toast.success('Product deleted', { style: toastStyle });
+      setDeleteId(null);
+      load();
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Prevent browser scroll from changing number inputs
+  const preventScrollChange = (e: React.WheelEvent<HTMLInputElement>) => {
+    e.currentTarget.blur();
+  };
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-heading text-3xl text-admin-text">Products</h1>
+          <p className="font-body text-sm text-admin-muted mt-1">{total} total products</p>
+        </div>
+        <button onClick={openCreate} className="admin-btn-primary">
+          <FiPlus className="w-4 h-4" /> Add Product
+        </button>
+      </div>
+
+      <div className="relative max-w-sm">
+        <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-admin-muted" />
+        <input
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Search products..."
+          className="admin-input pl-10"
+        />
+      </div>
+
+      {loading ? <PageLoader /> : products.length === 0 ? (
+        <EmptyState icon={<FiPackage className="w-16 h-16" />} title="No products found" description="Create your first product to get started" />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {products.map((product, i) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="admin-card overflow-hidden group hover:border-brand-500/30 transition-all"
+              >
+                <div className="aspect-[4/3] bg-admin-bg overflow-hidden relative">
+                  {product.images[0] ? (
+                    <img src={product.images[0].url} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <FiPackage className="w-10 h-10 text-admin-border" />
+                    </div>
+                  )}
+                  <div className="absolute top-2 left-2 flex gap-1 flex-wrap">
+                    {product.is_new && <Badge status="active" label="New" />}
+                    {product.is_featured && <Badge status="approved" label="Featured" />}
+                  </div>
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                    <button onClick={() => openEdit(product)} className="w-7 h-7 rounded-lg bg-admin-card/90 flex items-center justify-center hover:bg-brand-800 text-admin-text transition-colors cursor-pointer">
+                      <FiEdit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => setDeleteId(product.id)} className="w-7 h-7 rounded-lg bg-admin-card/90 flex items-center justify-center hover:bg-red-800 text-admin-text transition-colors cursor-pointer">
+                      <FiTrash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <p className="font-body text-[10px] text-brand-400 uppercase tracking-wider mb-1">{product.category.name}</p>
+                  <h3 className="font-body text-sm font-semibold text-admin-text line-clamp-1 mb-2">{product.title}</h3>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-body text-sm font-bold text-admin-text">₹{Number(product.price).toLocaleString('en-IN')}</span>
+                      <span className="font-body text-xs text-admin-muted line-through ml-2">₹{Number(product.old_price).toLocaleString('en-IN')}</span>
+                    </div>
+                    <span className="font-body text-xs text-admin-muted">
+                      {product.variants.reduce((s, v) => s + v.stock, 0)} in stock
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <Pagination page={page} totalPages={Math.ceil(total / PAGE_SIZE)} onChange={setPage} />
+        </>
+      )}
+
+      {/* Create/Edit Modal */}
+      <Modal open={formOpen} onClose={() => setFormOpen(false)} title={editProduct ? 'Edit Product' : 'Add Product'} size="xl">
+        <div className="grid grid-cols-2 gap-5 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="col-span-2">
+            <Input label="Title *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Kanjivaram Silk Saree" />
+          </div>
+          <div className="col-span-2">
+            <Textarea label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Product description..." />
+          </div>
+
+          <Select label="Category *" value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
+            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </Select>
+          <Input label="Badge" value={form.badge} onChange={(e) => setForm({ ...form, badge: e.target.value })} placeholder="e.g. Bestseller" />
+
+          {/* Price fields: type="text" prevents browser scroll from changing value */}
+          <div>
+            <label className="font-body text-xs font-semibold text-admin-muted uppercase tracking-wider mb-1.5 block">Price (₹) *</label>
+            <input
+              type="number"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value })}
+              onWheel={preventScrollChange}
+              placeholder="0"
+              className="admin-input w-full"
+              min="0"
+              step="1"
+            />
+          </div>
+          <div>
+            <label className="font-body text-xs font-semibold text-admin-muted uppercase tracking-wider mb-1.5 block">Old Price (₹) *</label>
+            <input
+              type="number"
+              value={form.old_price}
+              onChange={(e) => setForm({ ...form, old_price: e.target.value })}
+              onWheel={preventScrollChange}
+              placeholder="0"
+              className="admin-input w-full"
+              min="0"
+              step="1"
+            />
+          </div>
+
+          <div className="col-span-2 flex gap-6 flex-wrap">
+            <Toggle checked={form.is_new} onChange={(v) => setForm({ ...form, is_new: v })} label="Mark as New Arrival" />
+            <Toggle checked={form.is_featured} onChange={(v) => setForm({ ...form, is_featured: v })} label="Featured Product" />
+            <Toggle checked={form.is_active} onChange={(v) => setForm({ ...form, is_active: v })} label="Active (visible in store)" />
+          </div>
+
+          {/* Variants — 3 columns only: Size / Color / Stock */}
+          <div className="col-span-2">
+            <div className="flex items-center justify-between mb-2">
+              <label className="font-body text-xs font-semibold text-admin-muted uppercase tracking-wider">
+                Variants (Size / Color / Stock)
+              </label>
+              <button
+                type="button"
+                onClick={() => setVariantRows([...variantRows, { size: '', color: '', stock: '0' }])}
+                className="font-body text-xs text-brand-400 hover:text-brand-300 cursor-pointer flex items-center gap-1"
+              >
+                <FiPlus className="w-3.5 h-3.5" /> Add Variant
+              </button>
+            </div>
+            <div className="space-y-2">
+              {/* Header row */}
+              <div className="grid grid-cols-4 gap-2 px-1">
+                <span className="font-body text-[10px] text-admin-muted uppercase tracking-wider">Size</span>
+                <span className="font-body text-[10px] text-admin-muted uppercase tracking-wider">Color</span>
+                <span className="font-body text-[10px] text-admin-muted uppercase tracking-wider">Stock</span>
+                <span />
+              </div>
+              {variantRows.map((row, i) => (
+                <div key={i} className="grid grid-cols-4 gap-2 items-center">
+                  <input
+                    value={row.size}
+                    onChange={(e) => { const r = [...variantRows]; r[i] = { ...r[i], size: e.target.value }; setVariantRows(r); }}
+                    placeholder="e.g. XL"
+                    className="admin-input text-xs"
+                  />
+                  <input
+                    value={row.color}
+                    onChange={(e) => { const r = [...variantRows]; r[i] = { ...r[i], color: e.target.value }; setVariantRows(r); }}
+                    placeholder="e.g. Maroon"
+                    className="admin-input text-xs"
+                  />
+                  <input
+                    value={row.stock}
+                    onChange={(e) => { const r = [...variantRows]; r[i] = { ...r[i], stock: e.target.value }; setVariantRows(r); }}
+                    onWheel={preventScrollChange}
+                    type="number"
+                    placeholder="0"
+                    min="0"
+                    className="admin-input text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setVariantRows(variantRows.filter((_, j) => j !== i))}
+                    className="w-8 h-8 flex items-center justify-center text-admin-muted hover:text-red-400 cursor-pointer"
+                  >
+                    <FiX className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Image Upload */}
+          <div className="col-span-2">
+            <label className="font-body text-xs font-semibold text-admin-muted uppercase tracking-wider mb-2 block">Images</label>
+            <label className="flex items-center justify-center gap-2 border-2 border-dashed border-admin-border rounded-xl p-6 cursor-pointer hover:border-brand-500/50 transition-colors">
+              <FiUpload className="w-5 h-5 text-admin-muted" />
+              <span className="font-body text-sm text-admin-muted">Click to upload images (JPEG, PNG, WebP · max 5MB each)</span>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => e.target.files && setImageFiles(Array.from(e.target.files))}
+              />
+            </label>
+            {imageFiles.length > 0 && (
+              <p className="font-body text-xs text-brand-400 mt-2">{imageFiles.length} file(s) selected</p>
+            )}
+            {editProduct && editProduct.images.length > 0 && (
+              <div className="flex gap-2 mt-3 flex-wrap">
+                {editProduct.images.map((img) => (
+                  <img key={img.id} src={img.url} alt="" className="w-16 h-16 rounded-lg object-cover border border-admin-border" />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-admin-border">
+          <button onClick={() => setFormOpen(false)} className="admin-btn-secondary">Cancel</button>
+          <button onClick={handleSave} disabled={saving} className="admin-btn-primary">
+            {saving ? <Spinner size="sm" /> : null}
+            {saving ? 'Saving...' : editProduct ? 'Update Product' : 'Create Product'}
+          </button>
+        </div>
+      </Modal>
+
+      <ConfirmDialog
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        loading={deleting}
+        title="Delete Product"
+        message="This will soft-delete the product. It won't appear in the store but order history is preserved."
+      />
+    </div>
+  );
+}
