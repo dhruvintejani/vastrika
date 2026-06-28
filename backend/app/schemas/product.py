@@ -432,3 +432,4 @@ class CategoryUpdateRequest(BaseModel):
     name: Optional[str] = Field(default=None, min_length=2, max_length=100)
     description: Optional[str] = None
     is_active: Optional[bool] = None
+
