@@ -1602,7 +1602,7 @@ export default function Cart() {
         <div className="fixed inset-0 z-[120] bg-black/30 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-white border border-[#E8DCCB] rounded-2xl px-6 py-5 shadow-2xl flex items-center gap-3">
             <div className="w-5 h-5 border-2 border-[#E8DCCB] border-t-[#7A4E48] rounded-full animate-spin" />
-            <span className="font-body text-sm font-semibold text-[#1F1F1F]">Removing item...</span>
+            <span className="font-body text-sm font-semibold text-[#1F1F1F]">Loading...</span>
           </div>
         </div>
       )}
