@@ -585,6 +585,7 @@ export interface Product {
   review_count: number;
   is_new: boolean;
   is_featured: boolean;
+  is_active:boolean
   images: ProductImage[];
   variants: ProductVariant[];
 }
