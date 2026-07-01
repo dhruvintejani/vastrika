@@ -1553,7 +1553,7 @@ const testimonials = [
   {
     name: 'Priya Sharma',
     location: 'Delhi',
-    avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&q=80',
+    avatar: '',
     review: 'Absolutely in love with my Banarasi saree from Vastrika! The quality is exceptional and it arrived so beautifully packaged. Will definitely shop again.',
     rating: 5,
     product: 'Banarasi Silk Saree',
@@ -1649,6 +1649,44 @@ const features = [
   },
 ];
 
+let homeProductsCache: {
+  trendingProducts: any[];
+  newArrivals: any[];
+  featuredSarees: any[];
+} | null = null;
+
+let homeProductsRequest: Promise<{
+  trendingProducts: any[];
+  newArrivals: any[];
+  featuredSarees: any[];
+}> | null = null;
+
+function loadHomeProductsOnce() {
+  if (homeProductsCache) {
+    return Promise.resolve(homeProductsCache);
+  }
+
+  if (!homeProductsRequest) {
+    homeProductsRequest = Promise.all([
+      productsApi.getFeatured(8),
+      productsApi.getNewArrivals(4),
+      productsApi.getByCategory('Sarees', 4),
+    ]).then(([trendingProducts, newArrivals, featuredSarees]) => {
+      homeProductsCache = {
+        trendingProducts,
+        newArrivals,
+        featuredSarees,
+      };
+
+      return homeProductsCache;
+    }).finally(() => {
+      homeProductsRequest = null;
+    });
+  }
+
+  return homeProductsRequest;
+}
+
 export default function Home() {
   const [trendingProducts, setTrendingProducts] = useState<AdaptedProduct[]>([]);
   const [newArrivals, setNewArrivals] = useState<AdaptedProduct[]>([]);
@@ -1658,37 +1696,47 @@ export default function Home() {
   const [loadingFeaturedSarees, setLoadingFeaturedSarees] = useState(true);
 
   useEffect(() => {
-    // Fetch trending products
-    productsApi.getFeatured(8)
-      .then((products) => {
-        setTrendingProducts(products);
-        setLoadingTrending(false);
-      })
-      .catch(() => setLoadingTrending(false));
+  let active = true;
 
-    // Fetch new arrivals
-    productsApi.getNewArrivals(4)
-      .then((products) => {
-        setNewArrivals(products);
-        setLoadingNewArrivals(false);
-      })
-      .catch(() => setLoadingNewArrivals(false));
+  if (homeProductsCache) {
+    setTrendingProducts(homeProductsCache.trendingProducts);
+    setNewArrivals(homeProductsCache.newArrivals);
+    setFeaturedSarees(homeProductsCache.featuredSarees);
 
-    // Fetch featured sarees (filter by category)
-    // Defensive: productsApi.getByCategory may be missing on stale builds —
-    // fall back to a plain category-filtered list() call so this section
-    // never crashes the whole Home page.
-    const fetchFeaturedSarees = productsApi.getByCategory
-      ? productsApi.getByCategory('Sarees', 4)
-      : productsApi.list({ category: 'sarees', page: 1, page_size: 4 }).then((r) => r.products);
+    setLoadingTrending(false);
+    setLoadingNewArrivals(false);
+    setLoadingFeaturedSarees(false);
 
-    fetchFeaturedSarees
-      .then((products) => {
-        setFeaturedSarees(products);
-        setLoadingFeaturedSarees(false);
-      })
-      .catch(() => setLoadingFeaturedSarees(false));
-  }, []);
+    return;
+  }
+
+  setLoadingTrending(true);
+  setLoadingNewArrivals(true);
+  setLoadingFeaturedSarees(true);
+
+  loadHomeProductsOnce()
+    .then((data) => {
+      if (!active) return;
+
+      setTrendingProducts(data.trendingProducts);
+      setNewArrivals(data.newArrivals);
+      setFeaturedSarees(data.featuredSarees);
+    })
+    .catch((error) => {
+      console.error('Could not load home products', error);
+    })
+    .finally(() => {
+      if (!active) return;
+
+      setLoadingTrending(false);
+      setLoadingNewArrivals(false);
+      setLoadingFeaturedSarees(false);
+    });
+
+  return () => {
+    active = false;
+  };
+}, []);
 
   return (
     <div className="pt-[72px]">

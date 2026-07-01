@@ -1091,7 +1091,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
             className="w-full py-2.5 bg-[#1F1F1F] text-white text-xs font-body font-medium rounded-xl hover:bg-[#7A4E48] transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <FiShoppingBag className="w-3.5 h-3.5" />
-            {isAuthenticated ? 'Quick Add to Cart' : 'Sign in to Add'}
+            {isAuthenticated ? 'Add to Cart' : 'Sign in to Add'}
           </button>
         </motion.div>
       </div>
