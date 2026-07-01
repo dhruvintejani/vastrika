@@ -1,0 +1,30 @@
+<svg width="420" height="96" viewBox="0 0 420 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gold" x1="12" y1="8" x2="84" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E4C77D"/>
+      <stop offset="0.52" stop-color="#C9A86A"/>
+      <stop offset="1" stop-color="#A67C3B"/>
+    </linearGradient>
+    <linearGradient id="wine" x1="22" y1="15" x2="76" y2="82" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8F5B54"/>
+      <stop offset="1" stop-color="#5A3A36"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <rect x="4" y="4" width="88" height="88" rx="26" fill="#F8F5F0"/>
+    <rect x="5.8" y="5.8" width="84.4" height="84.4" rx="24.2" stroke="url(#gold)" stroke-width="3.6"/>
+    <path d="M48 15C58.8 31.7 69.8 42.6 84 48C69.8 53.4 58.8 64.3 48 81C37.2 64.3 26.2 53.4 12 48C26.2 42.6 37.2 31.7 48 15Z" fill="url(#wine)"/>
+    <path d="M48 28.6C54.8 38.8 61.7 45.2 70.5 48C61.7 50.8 54.8 57.2 48 67.4C41.2 57.2 34.3 50.8 25.5 48C34.3 45.2 41.2 38.8 48 28.6Z" fill="#F8F5F0"/>
+    <path d="M48 29L63.5 75H53.8L48 55.2L42.2 75H32.5L48 29Z" fill="url(#gold)"/>
+    <path d="M33.5 80C40.8 75.7 55.2 75.7 62.5 80" stroke="url(#gold)" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g>
+    <text x="112" y="52" fill="#1F1F1F" font-family="Georgia, 'Times New Roman', serif" font-size="43" font-weight="600" letter-spacing="0.6">
+      Vastrika
+    </text>
+    <text x="115" y="75" fill="#7A4E48" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" letter-spacing="3.9">
+      ETHNIC FASHION
+    </text>
+    <path d="M115 82H322" stroke="#C9A86A" stroke-width="2.4" stroke-linecap="round"/>
+  </g>
+</svg>

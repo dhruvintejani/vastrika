@@ -10,25 +10,25 @@ export default {
       },
       colors: {
         brand: {
-          50:  '#fdf8f0',
+          50: '#fdf8f0',
           100: '#faefd9',
           200: '#f3d9a8',
           300: '#e8bc6e',
           400: '#dda040',
-          500: '#c9a86a',  // gold
+          500: '#c9a86a',
           600: '#b08850',
           700: '#8a6838',
-          800: '#7a4e48',  // maroon
+          800: '#7a4e48',
           900: '#5a3a36',
         },
         admin: {
-          bg:      '#0f0f0f',
-          surface: '#1a1a1a',
-          card:    '#232323',
-          border:  '#2e2e2e',
-          hover:   '#2a2a2a',
-          muted:   '#888888',
-          text:    '#f0ebe3',
+          bg: '#F8F5F0',
+          surface: '#FFFFFF',
+          card: '#FFFFFF',
+          border: '#E8DCCB',
+          hover: '#EFE7DC',
+          muted: '#777777',
+          text: '#1F1F1F',
         },
       },
       animation: {
@@ -37,9 +37,18 @@ export default {
         'slide-in': 'slideIn 0.3s ease-out',
       },
       keyframes: {
-        fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
-        slideUp: { from: { opacity: '0', transform: 'translateY(16px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
-        slideIn: { from: { opacity: '0', transform: 'translateX(-16px)' }, to: { opacity: '1', transform: 'translateX(0)' } },
+        fadeIn: {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        slideUp: {
+          from: { opacity: '0', transform: 'translateY(16px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideIn: {
+          from: { opacity: '0', transform: 'translateX(-16px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
       },
     },
   },

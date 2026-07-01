@@ -3,48 +3,73 @@
 @tailwind utilities;
 
 @layer base {
-  *, *::before, *::after { box-sizing: border-box; }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: #f8f5f0;
+  }
 
   body {
     @apply bg-admin-bg text-admin-text font-body antialiased;
     scrollbar-width: thin;
-    scrollbar-color: #2e2e2e #0f0f0f;
+    scrollbar-color: #c9a86a #f8f5f0;
   }
 
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { @apply bg-admin-bg; }
-  ::-webkit-scrollbar-thumb { @apply bg-admin-border rounded-full; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-admin-muted; }
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
 
-  h1, h2, h3, h4 { @apply font-heading; }
+  ::-webkit-scrollbar-track {
+    @apply bg-admin-bg;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brand-500 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand-800;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+  }
 }
 
 @layer components {
   .admin-card {
-    @apply bg-admin-card border border-admin-border rounded-2xl;
+    @apply bg-admin-card border border-admin-border rounded-2xl shadow-sm;
   }
 
   .admin-input {
-    @apply w-full bg-admin-surface border border-admin-border text-admin-text font-body text-sm 
-           rounded-xl px-4 py-2.5 placeholder-admin-muted 
+    @apply w-full bg-admin-surface border border-admin-border text-admin-text font-body text-sm
+           rounded-xl px-4 py-2.5 placeholder-admin-muted
            focus:outline-none focus:border-brand-500 transition-colors;
   }
 
   .admin-btn-primary {
-    @apply bg-brand-800 hover:bg-brand-900 text-white font-body font-semibold text-sm 
-           px-5 py-2.5 rounded-xl transition-all cursor-pointer 
+    @apply bg-brand-800 hover:bg-brand-900 text-white font-body font-semibold text-sm
+           px-5 py-2.5 rounded-xl transition-all cursor-pointer
            flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .admin-btn-secondary {
-    @apply bg-admin-surface hover:bg-admin-hover border border-admin-border text-admin-text 
-           font-body font-medium text-sm px-5 py-2.5 rounded-xl transition-all cursor-pointer 
+    @apply bg-admin-surface hover:bg-admin-hover border border-admin-border text-admin-text
+           font-body font-medium text-sm px-5 py-2.5 rounded-xl transition-all cursor-pointer
            flex items-center gap-2;
   }
 
   .admin-btn-danger {
-    @apply bg-red-900/40 hover:bg-red-900/60 border border-red-800/50 text-red-400 
-           font-body font-medium text-sm px-4 py-2 rounded-xl transition-all cursor-pointer 
+    @apply bg-red-50 hover:bg-red-100 border border-red-200 text-red-600
+           font-body font-medium text-sm px-4 py-2 rounded-xl transition-all cursor-pointer
            flex items-center gap-2;
   }
 
@@ -53,10 +78,10 @@
   }
 
   .stat-card {
-    @apply admin-card p-6 flex flex-col gap-3 hover:border-brand-500/30 transition-all duration-300;
+    @apply admin-card p-6 flex flex-col gap-3 hover:border-brand-500/50 transition-all duration-300;
   }
 
   .table-row {
-    @apply border-b border-admin-border hover:bg-admin-hover/50 transition-colors;
+    @apply border-b border-admin-border hover:bg-admin-hover/70 transition-colors;
   }
 }
